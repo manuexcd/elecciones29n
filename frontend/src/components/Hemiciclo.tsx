@@ -18,7 +18,7 @@ const CY = ALTO - 10;
 const R_EXT = 310;
 const R_INT = 120;
 const FILAS = 10;
-const SIN_COLOR = "#94A3B8"; // partido sin color en Wikidata
+const SIN_COLOR = "#A8A29E"; // partido sin color en Wikidata
 
 type Escano = { x: number; y: number; angulo: number };
 
@@ -65,34 +65,40 @@ export function Hemiciclo({ partidos }: { partidos: Partido[] }) {
     <figure>
       <svg
         viewBox={`0 0 ${ANCHO} ${ALTO}`}
-        className="w-full max-w-2xl"
+        className="mx-auto w-full max-w-2xl"
         role="img"
         aria-labelledby="hemiciclo-titulo"
       >
         <title id="hemiciclo-titulo">
           {`Reparto de los ${total} escaños: ${conEscanos.map((p) => `${p.nombre}, ${p.escanos}`).join("; ")}`}
         </title>
-        {bloques.map(({ p, puntos }) => (
-          <g key={p.siglas ?? p.nombre} fill={p.color ?? SIN_COLOR}>
+        {bloques.map(({ p, puntos }, i) => (
+          // Los partidos aparecen uno tras otro, de izquierda a derecha (mismo orden alfabético).
+          <g
+            key={p.siglas ?? p.nombre}
+            fill={p.color ?? SIN_COLOR}
+            className="animate-fundido"
+            style={{ animationDelay: `${300 + i * 90}ms` }}
+          >
             <title>{`${p.nombre} (${p.siglas}): ${plural(p.escanos ?? 0)}`}</title>
             {puntos.map((e, i) => (
               <circle key={i} cx={e.x.toFixed(1)} cy={e.y.toFixed(1)} r={radio.toFixed(1)} />
             ))}
           </g>
         ))}
-        <text x={CX} y={CY - 38} textAnchor="middle" className="fill-slate-900 text-[40px] font-semibold dark:fill-slate-100">
+        <text x={CX} y={CY - 38} textAnchor="middle" className="fill-stone-900 text-[44px] font-bold dark:fill-stone-100">
           {total}
         </text>
-        <text x={CX} y={CY - 14} textAnchor="middle" className="fill-slate-600 text-[15px] dark:fill-slate-400">
+        <text x={CX} y={CY - 14} textAnchor="middle" className="fill-stone-600 text-[15px] dark:fill-stone-400">
           escaños
         </text>
       </svg>
 
       <figcaption className="mt-4">
-        <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
-          Mayoría absoluta: <span className="font-medium text-slate-900 dark:text-slate-100">{mayoria} escaños</span>
+        <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
+          Mayoría absoluta: <span className="font-medium text-stone-900 dark:text-stone-100">{mayoria} escaños</span>
         </p>
-        <ul className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-x-8 gap-y-1.5 text-sm sm:grid-cols-2">
           {conEscanos.map((p) => (
             <li key={p.siglas ?? p.nombre} className="flex items-center gap-2">
               <span
@@ -105,7 +111,7 @@ export function Hemiciclo({ partidos }: { partidos: Partido[] }) {
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-stone-500">
           Orden alfabético de izquierda a derecha; la posición no indica ideología. Colores de Wikidata.
         </p>
       </figcaption>

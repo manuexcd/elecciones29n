@@ -68,6 +68,17 @@ jul-2027) y **Gradle 9.8.1**. Cosas de Boot 4 que afectan al código:
   su fuente y fecha, y separar lo que dice un partido de sí mismo (programa) de los datos objetivos
   (escaños, votaciones). No ordenar por tamaño ni destacar partidos.
 - Programas electorales y noticias: **enlazar, no copiar** (derechos de autor).
+- **Colores de la interfaz:** grises piedra (`stone`) y ámbar como único acento (estilo «dashboard»
+  elegido por el usuario el 8-oct). Nunca rojo, azul, verde, morado ni magenta en la interfaz: se
+  asocian a partidos. Los colores de partido (Wikidata) solo aparecen junto a su nombre (franja de
+  la tarjeta, hemiciclo, desglose de la ficha). Piezas comunes en `frontend/src/components/ui.tsx`
+  (`Tarjeta`, `Cifra`, `Pastilla`, `Aviso`, `BotonEnlace`); fuente Plus Jakarta Sans con `next/font`
+  (se descarga en el build: el build de Docker necesita red).
+- Magnitudes (p. ej. el % de voto en la tabla de encuestas): escala secuencial de **un solo tono**
+  (ámbar) igual para todas las columnas, con tramos fijos y leyenda; nunca el color del partido como
+  intensidad (los grandes «brillarían» más). La identidad del partido va en un punto de color junto
+  a su nombre. Animaciones de entrada solo CSS (`animate-aparecer`), anuladas con
+  `prefers-reduced-motion`.
 - Todo dato externo editable por terceros (p. ej. Wikidata) se trata como no fiable: solo se aceptan
   URLs `http(s)` (ver `WikidataClient.soloHttp`) y los ids se validan antes de usarse
   (`/^Q\d+$/` en la ficha).
@@ -99,7 +110,7 @@ cd frontend
 npm install
 npm run gen:api           # con el backend en marcha: genera src/lib/api-types.ts
 npm run dev               # http://localhost:3000
-npm run typecheck && npm run build
+npm run typecheck && npm run build   # con `npm run dev` parado: el build pisa .next y el dev deja de servir las fuentes
 
 # Todo junto
 cd infra && docker compose up --build   # http://localhost
@@ -171,7 +182,7 @@ y `npm install` y **fueron bien**.
     aviso en la página). La regla nueva del Caddyfile no se ha probado con `docker compose`.
 - OpenAPI con campos obligatorios y nulables (ver Convenciones) y frontend con tipos generados.
   Verificado: tests unitarios, `npm run typecheck`, `npm run build`, y que el typecheck falla si se
-  usa sin comprobar un campo nulable. El job `api-types` del CI aún no se ha ejecutado en GitHub.
+  usa sin comprobar un campo nulable. El job `api-types` pasa en GitHub (PR #2).
 
 ## Pendiente antes de publicar
 

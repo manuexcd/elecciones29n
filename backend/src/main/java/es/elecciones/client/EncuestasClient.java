@@ -218,13 +218,19 @@ public class EncuestasClient {
         return copia.text().strip();
     }
 
-    /** El nombre va en el alt del logo; si no hay, en el título del enlace. Sin "(2021)" y similares. */
+    /**
+     * El nombre que muestra la tabla: el alt del logo o el texto del enlace ("SALF"); si solo hay un
+     * logo sin alt, el título del enlace. Sin "(2021)" y similares.
+     */
     private static String nombrePartido(Element th) {
         Element img = th.selectFirst("img[alt]");
         String nombre = img != null && !img.attr("alt").isBlank() ? img.attr("alt") : null;
+        if (nombre == null && !texto(th).isEmpty()) {
+            nombre = texto(th);
+        }
         if (nombre == null) {
             Element a = th.selectFirst("a[title]");
-            nombre = a != null ? a.attr("title") : texto(th);
+            nombre = a != null ? a.attr("title") : "";
         }
         nombre = PARENTESIS_FINAL.matcher(nombre.strip()).replaceFirst("");
         if (nombre.isEmpty()) {

@@ -39,7 +39,7 @@ class EncuestasClientTest {
               <th rowspan="2">Sample size</th><th rowspan="2">Turnout</th>
               <th><a href="/wiki/PP" title="PP"><img alt="PP" src="x.png"></a></th>
               <th><a href="/wiki/Adelante" title="Adelante Andalucía (2021)"><img src="y.png"></a></th>
-              <th><a href="/wiki/Vox" title="Vox">Vox</a></th>
+              <th><a href="/wiki/Vox" title="Vox (political party)">Vox</a></th>
               <th rowspan="2">Lead</th>
             </tr>
             <tr><th style="background:#00f"></th><th style="background:#0f0"></th><th style="background:#0a0"></th></tr>
@@ -73,7 +73,8 @@ class EncuestasClientTest {
         Encuestas e = EncuestasClient.parse(HTML, 2026, FUENTE);
 
         assertThat(e.fuente()).isEqualTo(FUENTE);
-        // Alfabético (Wikipedia los ordena por resultado), sin "(2021)" y sin Turnout ni Lead.
+        // Alfabético (Wikipedia los ordena por resultado), sin "(2021)" y sin Turnout ni Lead. Si la
+        // cabecera tiene texto se usa ese ("Vox"), no el título del enlace ("Vox (political party)").
         assertThat(e.partidos()).containsExactly("Adelante Andalucía", "PP", "Vox");
         assertThat(e.encuestas()).hasSize(3);
 
