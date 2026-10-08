@@ -39,7 +39,7 @@ class WikidataClientTest {
         RestClient.Builder builder = RestClient.builder();
         serverOut[0] = MockRestServiceServer.bindTo(builder).build();
         var props = new ElectionProperties("test-agent/1.0", new ElectionProperties.Wikidata(SPARQL_URL, Duration.ofHours(1)),
-                null, null, null, List.of(), List.of());
+                null, null, null, List.of(), List.of(), null);
         return new WikidataClient(builder, props);
     }
 

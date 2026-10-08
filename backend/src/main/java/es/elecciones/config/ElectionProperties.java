@@ -14,6 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param vedaEncuestasDesde Primer día en que NO se pueden publicar encuestas (LOREG art. 69.7).
  * @param hitos             Calendario electoral (BOE, RD 806/2026 y derivados de la LOREG).
  * @param formaciones       Correspondencia formación del Congreso → QID de Wikidata.
+ * @param encuestas         Tabla de sondeos de Wikipedia.
  */
 @ConfigurationProperties(prefix = "elecciones")
 public record ElectionProperties(
@@ -23,7 +24,8 @@ public record ElectionProperties(
         LocalDate fechaElecciones,
         LocalDate vedaEncuestasDesde,
         List<Hito> hitos,
-        List<Formacion> formaciones) {
+        List<Formacion> formaciones,
+        Encuestas encuestas) {
 
     public record Wikidata(String sparqlUrl, Duration ttl) {}
 
@@ -41,4 +43,12 @@ public record ElectionProperties(
      * @param wikidata QID de su ficha en Wikidata.
      */
     public record Formacion(String congreso, String wikidata) {}
+
+    /**
+     * @param apiUrl  API de MediaWiki ({@code .../w/api.php}).
+     * @param pagina  Título del artículo con las tablas de sondeos.
+     * @param anio    Año de la tabla que se lee (la página tiene una por año, bajo un encabezado con
+     *                el año). Las fechas de trabajo de campo no lo llevan: se toma de aquí.
+     */
+    public record Encuestas(String apiUrl, String pagina, int anio, Duration ttl) {}
 }

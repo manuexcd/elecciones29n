@@ -12,10 +12,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body>
         <div className="mx-auto max-w-5xl px-4 py-8">
-          <header className="mb-8 border-b border-slate-200 pb-4 dark:border-slate-800">
+          <header className="mb-8 flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-200 pb-4 dark:border-slate-800">
             <a href="/" className="text-2xl font-bold">
               Elecciones generales 29-N
             </a>
+            <nav aria-label="Secciones" className="flex gap-4 text-sm">
+              <a href="/" className="underline-offset-4 hover:underline">
+                Partidos
+              </a>
+              <a href="/encuestas" className="underline-offset-4 hover:underline">
+                Encuestas
+              </a>
+            </nav>
           </header>
           <main>{children}</main>
           <footer className="mt-12 border-t border-slate-200 pt-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400">

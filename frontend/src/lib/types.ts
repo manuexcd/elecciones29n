@@ -1,61 +1,26 @@
 /**
- * Tipos del contrato de la API.
+ * Tipos del contrato de la API, sacados de src/lib/api-types.ts (generado desde el OpenAPI del
+ * backend con `npm run gen:api`, con el backend en marcha). Si cambias un record en Java, regenera
+ * ese fichero: el frontend deja de compilar donde no cuadre.
  *
- * Hoy están escritos a mano para que el proyecto compile sin el backend en marcha. Cuando lo
- * tengas levantado, genera los tipos reales con `npm run gen:api` (crea src/lib/api-types.ts desde
- * /v3/api-docs) y sustituye este fichero por alias, por ejemplo:
- *
- *   import type { components } from "./api-types";
- *   export type Partido = components["schemas"]["Partido"];
- *
- * A partir de ahí, si cambias un record en Java, el frontend deja de compilar.
- *
- * Ojo: springdoc genera hoy TODOS los campos como opcionales (`id?: string`). Antes de cambiar,
- * hay que marcar en Java los obligatorios (p. ej. `@Schema(requiredMode = REQUIRED)` o un
- * PropertyCustomizer que lo haga para los componentes de los records).
+ * Los campos que pueden ser null se marcan en Java con `@Nullable` (JSpecify); el resto llegan
+ * siempre rellenos (ver NulabilidadRecords en el backend).
  */
+import type { components } from "./api-types";
 
-export interface Partido {
-  id: string | null; // QID de Wikidata; null si la formación aún no tiene ficha asociada
-  nombre: string;
-  siglas: string | null;
-  web: string | null;
-  logo: string | null;
-  fundacion: number | null;
-  color: string | null; // "#RRGGBB" (Wikidata P465, validado en el backend)
-  escanos: number | null; // en el Congreso, al final de la legislatura saliente
-  candidaturas: Escanos[]; // desglose de escanos (p. ej. PSOE + sus federaciones)
-  fuente: string | null; // URL de la ficha de Wikidata
-}
+type Schemas = components["schemas"];
 
-export interface Escanos {
-  nombre: string;
-  escanos: number;
-}
+export type Partido = Schemas["Partido"];
+export type Escanos = Schemas["Escanos"];
+export type Composicion = Schemas["Composicion"];
+export type Calendario = Schemas["Calendario"];
+export type Hito = Schemas["Hito"];
+export type Encuestas = Schemas["Encuestas"];
+export type Encuesta = Schemas["Encuesta"];
 
-export interface Composicion {
-  porFormacion: Escanos[];
-  porGrupo: Escanos[];
-  total: number;
-  fuente: string;
-}
-
-export interface Respuesta<T> {
-  datos: T;
-  actualizado: string; // ISO-8601
-  desactualizado: boolean;
-  fuente: string;
-}
-
-export interface Hito {
-  fecha: string; // yyyy-MM-dd
-  titulo: string;
-  fuente: string;
-}
-
-export interface Calendario {
-  fechaElecciones: string;
-  hitos: Hito[];
-  vedaEncuestasDesde: string;
-  encuestasPublicables: boolean;
-}
+/**
+ * springdoc genera un esquema por cada uso del genérico (RespuestaPartido, RespuestaComposicion...).
+ * Este alias recupera el genérico para los componentes; `api.ts` usa los esquemas concretos, y si
+ * alguno deja de encajar con el genérico, falla la compilación donde se pasan a los componentes.
+ */
+export type Respuesta<T> = Omit<Schemas["RespuestaPartido"], "datos"> & { datos: T };

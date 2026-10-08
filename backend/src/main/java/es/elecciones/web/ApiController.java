@@ -2,10 +2,12 @@ package es.elecciones.web;
 
 import es.elecciones.model.Calendario;
 import es.elecciones.model.Composicion;
+import es.elecciones.model.Encuestas;
 import es.elecciones.model.Partido;
 import es.elecciones.model.Respuesta;
 import es.elecciones.service.CalendarioService;
 import es.elecciones.service.CongresoService;
+import es.elecciones.service.EncuestasService;
 import es.elecciones.service.PartidoService;
 import java.time.Duration;
 import java.util.List;
@@ -35,11 +37,14 @@ public class ApiController {
     private final PartidoService partidos;
     private final CalendarioService calendario;
     private final CongresoService congreso;
+    private final EncuestasService encuestas;
 
-    public ApiController(PartidoService partidos, CalendarioService calendario, CongresoService congreso) {
+    public ApiController(PartidoService partidos, CalendarioService calendario, CongresoService congreso,
+                         EncuestasService encuestas) {
         this.partidos = partidos;
         this.calendario = calendario;
         this.congreso = congreso;
+        this.encuestas = encuestas;
     }
 
     @GetMapping("/partidos")
@@ -58,6 +63,36 @@ public class ApiController {
     @GetMapping("/congreso/composicion")
     public ResponseEntity<Respuesta<Composicion>> composicion() {
         return ResponseEntity.ok().cacheControl(CDN).body(congreso.composicion());
+    }
+
+    /**
+     * Sondeos publicados (Wikipedia). Durante la veda (LOREG art. 69.7) responde 451 sin cuerpo de
+     * datos, y antes de ella ningún caché puede guardar la respuesta más allá del inicio de la veda.
+     */
+    @GetMapping("/encuestas")
+    public ResponseEntity<Respuesta<Encuestas>> encuestas() {
+        Respuesta<Encuestas> respuesta = encuestas.encuestas().orElseThrow(VedaEncuestasException::new);
+        return ResponseEntity.ok().cacheControl(hastaLaVeda(calendario.hastaLaVeda())).body(respuesta);
+    }
+
+    /**
+     * Como {@link #CDN}, pero sin que ningún caché pueda servir la respuesta después de {@code restante}:
+     * a lo sumo s-maxage + stale-* desde que se generó.
+     */
+    static CacheControl hastaLaVeda(Duration restante) {
+        Duration sMaxAge = min(Duration.ofMinutes(5), restante);
+        Duration margen = restante.minus(sMaxAge);
+        if (sMaxAge.toSeconds() <= 0) {
+            return CacheControl.noStore();
+        }
+        CacheControl cc = CacheControl.maxAge(min(Duration.ofMinutes(1), sMaxAge)).cachePublic().sMaxAge(sMaxAge);
+        return margen.toSeconds() > 0
+                ? cc.staleWhileRevalidate(min(Duration.ofHours(1), margen)).staleIfError(min(Duration.ofDays(1), margen))
+                : cc;
+    }
+
+    private static Duration min(Duration a, Duration b) {
+        return a.compareTo(b) <= 0 ? a : b;
     }
 
     @GetMapping("/calendario")
