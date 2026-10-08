@@ -148,8 +148,10 @@ y `npm install` y **fueron bien**.
 - [ ] Verificar el art. 69.7 LOREG: veda de encuestas los 5 días previos a la votación
       (`veda-encuestas-desde: 2026-11-24`). A partir de esa fecha la web debe ocultar encuestas y
       cualquier contenido de campaña el día de reflexión.
-- [ ] Commitear `package-lock.json` y el wrapper de Gradle; pasar el CI a `npm ci` / `./gradlew`
+- [x] Commitear `package-lock.json` y el wrapper de Gradle; pasar el CI a `npm ci` / `./gradlew`
       (y activar `cache: npm` en `setup-node`).
+- [ ] Tras el primer push: comprobar que `contract.yml` funciona desde GitHub (el CDN del Congreso,
+      Akamai, podría bloquear las IP de los runners).
 - [ ] En `contract.yml`, subir la frecuencia a cada hora durante la campaña (13–27 nov).
 
 ## Fechas clave (de la prensa que cita el RD 806/2026; verificar en BOE)

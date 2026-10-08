@@ -20,7 +20,5 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.14.3"
       - name: Tests de contrato
-        run: gradle contractTest --no-daemon
+        run: ./gradlew contractTest --no-daemon

@@ -56,7 +56,7 @@ cd infra && docker compose up --build   # http://localhost
       «Prensa» salen de medios, y las «derivado» las he deducido de la LOREG.
 - [ ] Verificar el art. 69.7 LOREG (veda de encuestas: 5 días antes, desde el 24 nov).
 - [ ] El 28 de octubre, sustituir la lista provisional de Wikidata por las candidaturas proclamadas.
-- [ ] Commitear `package-lock.json` y el wrapper de Gradle; pasar CI a `npm ci` / `./gradlew`.
+- [x] Commitear `package-lock.json` y el wrapper de Gradle; pasar CI a `npm ci` / `./gradlew`.
 
 ## Fuentes
 

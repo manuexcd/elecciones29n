@@ -17,12 +17,10 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      # Si commiteas el wrapper (`gradle wrapper`), cambia `gradle` por `./gradlew` y quita gradle-version.
+      # Usa la versión de Gradle del wrapper (gradle/wrapper/gradle-wrapper.properties) y cachea dependencias.
       - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.14.3"
       - name: Tests (sin llamar a fuentes reales)
-        run: gradle test --no-daemon
+        run: ./gradlew test --no-daemon
 
   frontend:
     runs-on: ubuntu-latest
@@ -34,8 +32,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      # Tras commitear package-lock.json: usa `npm ci` y activa `cache: npm` en setup-node.
-      - run: npm install
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
       - run: npm run typecheck
       - run: npm run build
 
