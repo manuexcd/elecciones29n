@@ -53,7 +53,7 @@ class CongresoClientTest {
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         var props = new ElectionProperties("test-agent/1.0", null,
                 new ElectionProperties.Congreso("https://congreso.test", "/es/opendata/diputados", DISOLUCION, Duration.ofHours(1)),
-                null, null, List.of(), List.of());
+                null, null, List.of(), List.of(), null);
         CongresoClient client = new CongresoClient(builder, props);
 
         ArrayNode activos = diputados(100, "Zeta", "Grupo Zeta", null);

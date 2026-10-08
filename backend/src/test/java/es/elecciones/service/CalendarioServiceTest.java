@@ -23,7 +23,7 @@ class CalendarioServiceTest {
             List.of(
                     new ElectionProperties.Hito(LocalDate.of(2026, 11, 29), "Elecciones", "BOE"),
                     new ElectionProperties.Hito(LocalDate.of(2026, 10, 6), "BOE", "BOE")),
-            List.of());
+            List.of(), null);
 
     private CalendarioService en(String fechaHora) {
         var instante = LocalDateTime.parse(fechaHora).atZone(AppConfig.ZONA).toInstant();
@@ -45,5 +45,11 @@ class CalendarioServiceTest {
     void desdeElDia24NoSePuedenPublicarEncuestas() {
         assertThat(en("2026-11-24T00:00:00").calendario().encuestasPublicables()).isFalse();
         assertThat(en("2026-11-29T12:00:00").calendario().encuestasPublicables()).isFalse();
+    }
+
+    @Test
+    void hastaLaVedaCuentaHastaLaMedianocheDeMadrid() {
+        assertThat(en("2026-11-23T23:00:00").hastaLaVeda()).isEqualTo(Duration.ofHours(1));
+        assertThat(en("2026-11-24T00:30:00").hastaLaVeda()).isNegative();
     }
 }

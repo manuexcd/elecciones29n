@@ -98,3 +98,12 @@ elecciones:
     - { congreso: "SUMAR",         wikidata: Q112098527 }
     - { congreso: "UPN",           wikidata: Q1432791 }   # Unión del Pueblo Navarro
     - { congreso: "VOX",           wikidata: Q15630787 }
+
+  # Sondeos: tabla «Voting intention estimates» de la Wikipedia en inglés (la española no tiene
+  # artículo de sondeos para 2026). Recoge todas las encuestas publicadas, CIS incluido. Se dejan de
+  # servir desde veda-encuestas-desde.
+  encuestas:
+    api-url: https://en.wikipedia.org/w/api.php
+    pagina: Opinion polling for the 2026 Spanish general election
+    anio: 2026
+    ttl: PT1H

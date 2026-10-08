@@ -25,6 +25,8 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     // Genera /v3/api-docs (contrato OpenAPI) y /swagger-ui.html
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+    // HTML de fuentes sin API (tabla de encuestas de Wikipedia)
+    implementation("org.jsoup:jsoup:1.23.2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")   // @WebMvcTest

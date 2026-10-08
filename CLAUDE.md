@@ -30,9 +30,10 @@ navegador ─► Caddy ─► frontend (Next.js SSR) ─► backend (Spring Boot
   contrato contra las fuentes reales, programado).
 
 Piezas clave del backend:
-- `client/` — un cliente por fuente: `WikidataClient` (SPARQL) y `CongresoClient` (Open Data del
-  Congreso → `model/Composicion`, servido en `/api/congreso/composicion`). Devuelven datos ya
-  normalizados.
+- `client/` — un cliente por fuente: `WikidataClient` (SPARQL), `CongresoClient` (Open Data del
+  Congreso → `model/Composicion`, servido en `/api/congreso/composicion`) y `EncuestasClient`
+  (tabla de sondeos de Wikipedia con Jsoup → `model/Encuestas`, en `/api/encuestas`). Devuelven
+  datos ya normalizados.
 - `model/Partido` — modelo común. La interfaz solo conoce este record. `PartidoService` lo construye
   cruzando fuentes: **qué** partidos aparecen lo decide el Congreso (formaciones con escaños);
   Wikidata solo aporta la ficha (nombre, logo, web, fundación) mediante la tabla
@@ -74,8 +75,13 @@ jul-2027) y **Gradle 9.8.1**. Cosas de Boot 4 que afectan al código:
   (`@Tag("contract")`, excluido de `gradle test`, se lanza con `gradle contractTest`).
 - Cada fuente expone dos métricas Micrometer: última actualización correcta y fallos consecutivos.
 - Los tests unitarios nunca llaman a la red.
-- El tipo `Respuesta`/`Partido`/`Calendario` del frontend (`src/lib/types.ts`) está escrito a mano; el
-  objetivo es sustituirlo por tipos generados con `npm run gen:api` desde el OpenAPI del backend.
+- Tipos del frontend generados desde el OpenAPI: `npm run gen:api` (backend en marcha) escribe
+  `src/lib/api-types.ts`, que **se commitea**; `src/lib/types.ts` solo tiene alias. El job `api-types`
+  del CI falla si el fichero no coincide con lo que genera el backend. Al cambiar un record: regenerar.
+- Nulabilidad en los records de `model/`: `@Nullable` de JSpecify en los componentes que pueden ser
+  null; el resto se consideran no nulos. `config/NulabilidadRecords` (un `ModelConverter` de
+  swagger) marca en el OpenAPI todos los componentes como `required` (Jackson serializa también los
+  null) y los `@Nullable` como `type: [X, "null"]`.
 - Variables de entorno de Spring con *relaxed binding*: `elecciones.user-agent` →
   `ELECCIONES_USERAGENT` (sin guion bajo entre palabras).
 
@@ -143,13 +149,29 @@ y `npm install` y **fueron bien**.
   como hex en `WikidataClient`). Esos colores NO pasan el validador de paleta (EH Bildu/Junts casi
   iguales, amarillos con poco contraste): se compensa con leyenda con nombre y escaños y `<title>`
   por partido al pasar el ratón. Revisado con capturas de Chrome headless en escritorio y móvil.
-- `npm run gen:api` funciona, pero springdoc marca todos los campos como opcionales; por eso
-  `types.ts` sigue escrito a mano (ver comentario en el fichero).
 
-**Sin verificar todavía:**
-- `docker compose up --build` (los Dockerfile y el Caddyfile no se han construido nunca).
-- La sintaxis `header @pages >Cache-Control ...` del Caddyfile (prefijo `>` = aplicar tras la
-  respuesta del upstream).
+**Sesión del 8-oct-2026:**
+- `docker compose up --build` probado por el usuario: funciona.
+- **Encuestas** (decidido con el usuario: fuente Wikipedia en inglés, «Opinion polling for the 2026
+  Spanish general election»; la española no tiene artículo de sondeos para 2026):
+  - Se pide la página entera (`action=parse`, ~1,6 MB, TTL 1 h) porque las referencias (enlace a
+    la publicación original de cada encuesta) no salen al renderizar solo la sección. Se lee la
+    primera tabla bajo el encabezado con id = `elecciones.encuestas.anio`; se expanden
+    rowspan/colspan (las filas del CIS comparten fecha y muestra). Fuente = enlace `oldid` a la
+    revisión leída.
+  - Neutralidad: partidos en orden alfabético, sin columna «Lead» ni sombreado del ganador, todas
+    las encuestas sin filtrar. Si la cabecera cambia, excepción → se sirve el último dato bueno.
+  - Veda: `CalendarioService.encuestasPublicables()` es el único que decide. Durante la veda la
+    API responde **451** con `no-store` sin consultar la caché; antes, `ApiController.hastaLaVeda`
+    limita el Cache-Control para que s-maxage + stale-* no pasen de las 00:00 del día de veda.
+    La página `/encuestas` sale con `no-store` en Caddy, pide los datos sin caché de Next y
+    comprueba también la fecha local (si el backend falla, usa 2026-11-24: ante la duda, no publica).
+  - Verificado: test de contrato contra Wikipedia (142 encuestas, ninguna descartada), unitarios,
+    y la veda de extremo a extremo con `ELECCIONES_VEDAENCUESTASDESDE=2026-10-01` (451 en la API y
+    aviso en la página). La regla nueva del Caddyfile no se ha probado con `docker compose`.
+- OpenAPI con campos obligatorios y nulables (ver Convenciones) y frontend con tipos generados.
+  Verificado: tests unitarios, `npm run typecheck`, `npm run build`, y que el typecheck falla si se
+  usa sin comprobar un campo nulable. El job `api-types` del CI aún no se ha ejecutado en GitHub.
 
 ## Pendiente antes de publicar
 
@@ -182,17 +204,16 @@ y `npm install` y **fueron bien**.
 
 ## Próximos pasos (orden recomendado)
 
-1. Probar `docker compose up --build` (Dockerfiles y Caddyfile nunca construidos).
-2. Marcar campos obligatorios en el OpenAPI y pasar el frontend a tipos generados.
+1. **Noticias** (decidido: RSS de Europa Press, canal 00066, y RTVE `rss/temas_politica.xml`;
+   ambos comprobados el 8-oct; EFE da 403). Titular + enlace + fecha, sin copiar texto.
+2. **Programas** (decidido: URLs a mano en `application.yml`, una por partido, que el usuario rellena
+   cuando se publiquen; «No publicado todavía» mientras tanto; comprobar que el enlace responde).
 3. **Conector del BOE** para las candidaturas proclamadas (a partir del 28 de octubre). Hasta
    entonces la home muestra un aviso de «lista provisional» (se oculta sola después de esa fecha).
-4. Programas (solo enlaces), noticias (RSS: titular + enlace) y encuestas (CIS / tablas públicas)
-   con el corte automático por la veda.
-5. Resultados de la noche electoral si Interior (Infoelectoral) ofrece datos consumibles.
-6. Añadir Caffeine/Resilience4j/Jsoup **solo cuando hagan falta** (con una fuente no se justifican;
-   Jsoup será necesario si una fuente solo ofrece HTML).
+4. Resultados de la noche electoral si Interior (Infoelectoral) ofrece datos consumibles.
+5. Añadir Caffeine/Resilience4j **solo cuando hagan falta** (Jsoup ya está, para Wikipedia).
 
-## Fuentes previstas (todas pendientes salvo Wikidata y el Congreso)
+## Fuentes previstas
 
 | Dato | Fuente |
 |---|---|
@@ -202,7 +223,8 @@ y `npm install` y **fueron bien**.
 | Votaciones, Senado | Open Data del Congreso / Senado |
 | Resultados históricos y noche electoral | Infoelectoral (Ministerio del Interior) |
 | Partidos registrados | Registro de Partidos Políticos (Interior) |
-| Encuestas | CIS (barómetros), tablas públicas de sondeos |
+| Encuestas | Wikipedia (en), tabla de sondeos — **implementado** |
+| Noticias | RSS de Europa Press y RTVE |
 
-Salvo Wikidata y el Congreso, los endpoints concretos **no se han comprobado**: validar cada URL y formato antes
+Salvo las marcadas como implementadas, los endpoints concretos **no se han comprobado**: validar cada URL y formato antes
 de implementar el cliente.

@@ -46,7 +46,7 @@ export default async function FichaPartido({ params }: Props) {
         <dt className="font-medium">Escaños en el Congreso saliente</dt>
         <dd>
           {p.escanos ?? "No consta"}
-          {p.candidaturas.length > 1 && (
+          {p.candidaturas && p.candidaturas.length > 1 && (
             <span className="block text-sm text-slate-600 dark:text-slate-400">
               {p.candidaturas.map((c) => `${c.nombre}: ${c.escanos}`).join(" · ")}
             </span>
