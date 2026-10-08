@@ -1,6 +1,6 @@
 package es.elecciones.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import es.elecciones.config.ElectionProperties;
 import es.elecciones.model.Partido;
 import java.text.Collator;
@@ -108,7 +108,7 @@ public class WikidataClient {
 
     private static String value(JsonNode row, String field) {
         JsonNode v = row.path(field).path("value");
-        return v.isTextual() && !v.asText().isBlank() ? v.asText() : null;
+        return v.isString() && !v.asString().isBlank() ? v.asString() : null;
     }
 
     /** Wikidata es editable por cualquiera: nunca pasamos al frontend un esquema que no sea http(s). */

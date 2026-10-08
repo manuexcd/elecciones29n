@@ -21,7 +21,7 @@ navegador ─► Caddy ─► frontend (Next.js SSR) ─► backend (Spring Boot
                 └──► /api/*  ────────────────────────┘
 ```
 
-- `backend/` — Java 21, Spring Boot 3.5, Gradle (Kotlin DSL). API REST de solo lectura + OpenAPI
+- `backend/` — Java 21, Spring Boot 4.1, Gradle 9 (wrapper, Kotlin DSL), Jackson 3 (`tools.jackson`). API REST de solo lectura + OpenAPI
   (`/v3/api-docs`, `/swagger-ui.html`) + Prometheus (`/actuator/prometheus`).
 - `frontend/` — Next.js 15 + TypeScript + Tailwind v4. Solo componentes de servidor; las llamadas al
   backend son server-side (sin CORS).
@@ -47,6 +47,20 @@ Piezas clave del backend:
 - `ApiController` — envía `Cache-Control` pensado para la CDN (s-maxage, stale-while-revalidate,
   stale-if-error).
 
+## Versiones (migrado el 8-oct-2026)
+
+Spring Boot 3.5 dejó de tener soporte el 30-jun-2026; se migró a **Spring Boot 4.1.1** (soporte hasta
+jul-2027) y **Gradle 9.8.1**. Cosas de Boot 4 que afectan al código:
+- Starters: `spring-boot-starter-webmvc` (antes `-web`), `spring-boot-starter-restclient` (sin él no
+  hay `RestClient.Builder`); en test, `-webmvc-test` y `-restclient-test`.
+- Paquetes nuevos: `org.springframework.boot.restclient.RestClientCustomizer`,
+  `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`.
+- Jackson 3: `tools.jackson.databind.*`, `asString()`/`isString()` en vez de `asText()`/`isTextual()`.
+  Jackson 2 sigue en el classpath solo porque lo arrastra springdoc/swagger: no usarlo.
+- springdoc 3.1.x (compilado contra Boot 4.1); el OpenAPI generado pasa a 3.1.0.
+- El Dockerfile del backend compila con `./gradlew` sobre `eclipse-temurin:21-jdk` (misma versión
+  de Gradle en local, CI y Docker; la imagen oficial `gradle` va por detrás).
+
 ## Convenciones
 
 - **Neutralidad (importante):** orden alfabético, mismos campos para todos los partidos, cada dato con
@@ -70,7 +84,6 @@ Piezas clave del backend:
 ```bash
 # Backend
 cd backend
-gradle wrapper --gradle-version 8.14.3   # solo la primera vez, si no existe ./gradlew
 ./gradlew test            # unitarios, sin red
 ./gradlew contractTest    # llama de verdad a Wikidata
 ./gradlew bootRun         # http://localhost:8080
