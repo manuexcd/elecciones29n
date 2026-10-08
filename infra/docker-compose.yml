@@ -1,0 +1,43 @@
+services:
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    environment:
+      # Relaxed binding de Spring: elecciones.user-agent -> ELECCIONES_USERAGENT (sin guion bajo entre palabras)
+      ELECCIONES_USERAGENT: "${USER_AGENT:-elecciones-web/0.1 (proyecto personal; contacto: CAMBIAR)}"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+
+  frontend:
+    build: ../frontend
+    restart: unless-stopped
+    environment:
+      API_URL: http://backend:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # En local déjalo vacío (sirve en :80). En producción: SITE_ADDRESS=tudominio.es (Caddy gestiona el TLS).
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  caddy_data:
+  caddy_config:

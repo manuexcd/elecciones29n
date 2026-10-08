@@ -1,0 +1,100 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: elecciones-backend
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+elecciones:
+  # Wikimedia exige un User-Agent que identifique el proyecto y un contacto. CÁMBIALO antes de desplegar.
+  user-agent: "elecciones-web/0.1 (proyecto personal; contacto: CAMBIAR-POR-TU-EMAIL-O-URL)"
+  wikidata:
+    sparql-url: https://query.wikidata.org/sparql
+    ttl: PT6H
+  congreso:
+    base-url: https://www.congreso.es
+    indice: /es/opendata/diputados
+    # RD 806/2026: los diputados que no forman parte de la Diputación Permanente causan baja este día.
+    fecha-disolucion: 2026-10-06
+    # Tras la disolución el dato ya no cambia; se refresca poco.
+    ttl: PT12H
+
+  fecha-elecciones: 2026-11-29
+  # LOREG art. 69.7: prohibido publicar encuestas en los 5 días previos a la votación (24-28 nov).
+  # VERIFICAR el artículo antes de la campaña.
+  veda-encuestas-desde: 2026-11-24
+
+  # Fechas tomadas de la prensa que cita el Real Decreto 806/2026 (BOE 6-oct-2026).
+  # VERIFICAR cada una contra el texto del BOE; las marcadas "LOREG" son derivadas, no leídas del decreto.
+  hitos:
+    - fecha: 2026-10-06
+      titulo: Publicación en el BOE del decreto de disolución de las Cortes y convocatoria
+      fuente: BOE (RD 806/2026)
+    - fecha: 2026-10-26
+      titulo: Fin del plazo de presentación de candidaturas
+      fuente: Prensa (verificar en BOE)
+    - fecha: 2026-10-28
+      titulo: Publicación de las candidaturas presentadas
+      fuente: Prensa (verificar en BOE)
+    - fecha: 2026-11-13
+      titulo: Comienza la campaña electoral
+      fuente: BOE (RD 806/2026)
+    - fecha: 2026-11-25
+      titulo: Fecha límite ordinaria para depositar el voto por correo
+      fuente: Prensa (verificar en BOE)
+    - fecha: 2026-11-27
+      titulo: Último día de campaña electoral
+      fuente: LOREG art. 51 (derivado)
+    - fecha: 2026-11-28
+      titulo: Jornada de reflexión
+      fuente: LOREG (derivado)
+    - fecha: 2026-11-29
+      titulo: Elecciones generales
+      fuente: BOE (RD 806/2026)
+    - fecha: 2026-12-24
+      titulo: Fecha límite constitucional para que se reúna el nuevo Congreso
+      fuente: Prensa (verificar en BOE)
+
+  # Formaciones con escaños en la legislatura saliente → su ficha en Wikidata (logo, web, fundación).
+  # "congreso" debe coincidir EXACTAMENTE con FORMACIONELECTORAL del Open Data del Congreso.
+  # Varias formaciones con el MISMO QID se muestran como un solo partido con los escaños sumados
+  # (decisión del usuario, 7-oct-2026: las federaciones del PSOE van con el PSOE). El desglose se
+  # conserva en Partido.candidaturas. QID propios de las federaciones, por si se deshace:
+  # PSC Q2055003, PSdeG Q3047694, PSE-EE Q2733414, PSIB Q577458, PSN Q280906.
+  # Se revisó a mano el 7-oct-2026. Una formación que falte aquí se muestra igual, pero sin ficha
+  # (el test de contrato CongresoContractTest avisa). El 28-oct se sustituirá por las candidaturas del BOE.
+  formaciones:
+    - { congreso: "BNG",           wikidata: Q885433 }    # Bloque Nacionalista Galego
+    - { congreso: "CCa",           wikidata: Q1104327 }   # Coalición Canaria
+    - { congreso: "EAJ-PNV",       wikidata: Q43093 }     # Partido Nacionalista Vasco
+    - { congreso: "EH Bildu",      wikidata: Q1029761 }
+    - { congreso: "ERC",           wikidata: Q150068 }    # Esquerra Republicana de Catalunya
+    - { congreso: "JxCAT-JUNTS",   wikidata: Q97155800 }  # Junts per Catalunya
+    - { congreso: "PP",            wikidata: Q185088 }
+    - { congreso: "PSC-PSOE",      wikidata: Q138198 }    # federación del PSOE (Cataluña)
+    - { congreso: "PsdeG-PSOE",    wikidata: Q138198 }    # federación del PSOE (Galicia)
+    - { congreso: "PSE-EE (PSOE)", wikidata: Q138198 }    # federación del PSOE (Euskadi)
+    - { congreso: "PSIB-PSOE",     wikidata: Q138198 }    # federación del PSOE (Baleares)
+    - { congreso: "PSN-PSOE",      wikidata: Q138198 }    # federación del PSOE (Navarra)
+    - { congreso: "PSOE",          wikidata: Q138198 }
+    - { congreso: "SUMAR",         wikidata: Q112098527 }
+    - { congreso: "UPN",           wikidata: Q1432791 }   # Unión del Pueblo Navarro
+    - { congreso: "VOX",           wikidata: Q15630787 }

@@ -1,0 +1,24 @@
+# Java / Gradle
+build/
+.gradle/
+out/
+*.class
+
+# Node / Next.js
+node_modules/
+.next/
+next-env.d.ts
+
+# IDE / SO
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Entorno local
+.env
+*.log
+
+# Salida de compilación del IDE (Eclipse/VS Code Java) y caché de TypeScript
+bin/
+*.tsbuildinfo
