@@ -13,7 +13,7 @@ navegador ──► Caddy (:80/:443) ──► frontend (Next.js, SSR)  ──�
                   └──────────────► /api/*  ────────────────────────────┘
 ```
 
-- `backend/` — Java 21, Spring Boot 3.5, Gradle. Consulta las fuentes, las normaliza a un modelo
+- `backend/` — Java 21, Spring Boot 4.1, Gradle 9 (wrapper). Consulta las fuentes, las normaliza a un modelo
   común (`Partido`) y expone una API REST de solo lectura con contrato OpenAPI (`/v3/api-docs`).
 - `frontend/` — Next.js (React) + TypeScript + Tailwind. Componentes de servidor, sin JS de cliente.
 - `infra/` — Docker Compose y Caddyfile.
@@ -32,8 +32,8 @@ interfaz los muestra.
 ## Puesta en marcha
 
 ```bash
-# Backend (una sola vez, para generar el wrapper):
-cd backend && gradle wrapper --gradle-version 8.14.3
+# Backend:
+cd backend
 ./gradlew test          # tests unitarios, sin red
 ./gradlew bootRun       # http://localhost:8080  (Swagger UI en /swagger-ui.html)
 ./gradlew contractTest  # llama de verdad a Wikidata

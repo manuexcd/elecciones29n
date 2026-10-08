@@ -1,6 +1,6 @@
 package es.elecciones.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import es.elecciones.config.ElectionProperties;
 import es.elecciones.model.Composicion;
 import es.elecciones.model.Composicion.Escanos;
@@ -79,7 +79,7 @@ public class CongresoClient {
         if (fechaDisolucion != null) {
             String fecha = FECHA.format(fechaDisolucion);
             for (JsonNode d : bajas) {
-                if (fecha.equals(d.path("FECHABAJA").asText())) {
+                if (fecha.equals(d.path("FECHABAJA").asString())) {
                     diputados.add(d);
                 }
             }
@@ -100,9 +100,9 @@ public class CongresoClient {
     }
 
     private static String texto(JsonNode d, String campo) {
-        String v = d.path(campo).asText("").strip();
+        String v = d.path(campo).asString("").strip();
         if (v.isEmpty()) {
-            throw new IllegalStateException("Diputado sin " + campo + ": " + d.path("NOMBRE").asText());
+            throw new IllegalStateException("Diputado sin " + campo + ": " + d.path("NOMBRE").asString());
         }
         return v;
     }
