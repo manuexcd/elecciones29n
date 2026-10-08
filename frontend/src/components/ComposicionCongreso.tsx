@@ -1,47 +1,50 @@
 import { FuenteInfo } from "@/components/FuenteInfo";
 import { Hemiciclo } from "@/components/Hemiciclo";
+import { Tarjeta, TituloSeccion } from "@/components/ui";
 import type { Composicion, Partido, Respuesta } from "@/lib/types";
 
-/** Escaños de la legislatura saliente: hemiciclo por partido y tabla por grupo parlamentario. */
+/** Escaños de la legislatura saliente por partido (hemiciclo). */
 export function ComposicionCongreso({ r, partidos }: { r: Respuesta<Composicion>; partidos: Partido[] | null }) {
-  const c = r.datos;
   return (
-    <section aria-labelledby="congreso">
-      <h2 id="congreso" className="text-xl font-semibold">
-        Congreso saliente (XV legislatura)
-      </h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Reparto de escaños en el momento de la disolución de las Cortes ({c.total} diputados).
-      </p>
-      {partidos && (
-        <div className="mt-4">
-          <Hemiciclo partidos={partidos} />
-        </div>
-      )}
-      <h3 className="mt-8 font-medium">Por grupo parlamentario</h3>
-      <table className="mt-3 w-full max-w-xl text-sm">
-        <thead>
-          <tr className="border-b border-slate-200 text-left dark:border-slate-800">
-            <th scope="col" className="py-1 font-medium">
-              Grupo parlamentario
-            </th>
-            <th scope="col" className="py-1 text-right font-medium">
-              Escaños
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {c.porGrupo.map((g) => (
-            <tr key={g.nombre} className="border-b border-slate-100 dark:border-slate-900">
-              <td className="py-1">{g.nombre}</td>
-              <td className="py-1 text-right tabular-nums">{g.escanos}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mt-3">
+    <Tarjeta etiqueta="congreso">
+      <TituloSeccion
+        id="congreso"
+        subtitulo={`Reparto de escaños en el momento de la disolución de las Cortes (${r.datos.total} diputados).`}
+      >
+        Congreso saliente · XV legislatura
+      </TituloSeccion>
+      {partidos && <Hemiciclo partidos={partidos} />}
+      <div className="mt-5">
         <FuenteInfo r={r} nombre="Datos abiertos del Congreso de los Diputados" />
       </div>
-    </section>
+    </Tarjeta>
+  );
+}
+
+/**
+ * Escaños por grupo parlamentario, como barras. Orden alfabético (el que da el backend), no por
+ * tamaño; todas las barras del mismo color neutro.
+ */
+export function GruposParlamentarios({ r }: { r: Respuesta<Composicion> }) {
+  const max = Math.max(...r.datos.porGrupo.map((g) => g.escanos), 1);
+  return (
+    <Tarjeta etiqueta="grupos">
+      <TituloSeccion id="grupos" subtitulo="Orden alfabético. Los grupos no coinciden siempre con los partidos: el Mixto reúne a varios.">
+        Grupos parlamentarios
+      </TituloSeccion>
+      <ul className="grid gap-x-10 gap-y-3 md:grid-cols-2">
+        {r.datos.porGrupo.map((g) => (
+          <li key={g.nombre}>
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <span className="truncate">{g.nombre.replace(/^Grupo Parlamentario /, "")}</span>
+              <span className="font-semibold tabular-nums">{g.escanos}</span>
+            </div>
+            <div className="mt-1 h-1.5 rounded-full bg-stone-100 dark:bg-stone-800" aria-hidden>
+              <div className="h-full rounded-full bg-stone-400 dark:bg-stone-500" style={{ width: `${(g.escanos / max) * 100}%` }} />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Tarjeta>
   );
 }

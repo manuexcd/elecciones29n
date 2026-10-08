@@ -1,9 +1,50 @@
 @import "tailwindcss";
 
+/*
+ * Paleta: grises piedra y ámbar como único acento. Ningún color de la interfaz es rojo, azul,
+ * verde, morado ni magenta: se asociarían a un partido. Los únicos colores «políticos» de la web
+ * son los de cada partido (Wikidata), y solo junto a su nombre.
+ */
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  /* Entrada suave de tarjetas y del hemiciclo. Se desactiva con prefers-reduced-motion. */
+  --animate-aparecer: aparecer 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-fundido: fundido 0.6s ease-out both;
+
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes fundido {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 :root {
   color-scheme: light dark;
 }
 
 body {
-  @apply bg-white text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-stone-100 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100;
 }

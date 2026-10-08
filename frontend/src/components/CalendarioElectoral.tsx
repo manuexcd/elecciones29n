@@ -1,47 +1,52 @@
+import { Pastilla, Tarjeta, TituloSeccion } from "@/components/ui";
 import type { Calendario } from "@/lib/types";
-
-const fmt = new Intl.DateTimeFormat("es-ES", {
-  weekday: "short",
-  day: "numeric",
-  month: "long",
-  timeZone: "Europe/Madrid",
-});
 
 // "yyyy-MM-dd" -> Date a mediodía UTC, para que la zona horaria no mueva el día.
 const dia = (iso: string) => new Date(`${iso}T12:00:00Z`);
+const fmtDia = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", timeZone: "UTC" });
+const fmtSemana = new Intl.DateTimeFormat("es-ES", { weekday: "short", timeZone: "UTC" });
+const fmtLargo = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "long", timeZone: "UTC" });
 
-export function CalendarioElectoral({ c }: { c: Calendario }) {
-  const hoy = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" }); // yyyy-MM-dd
+/** Línea de tiempo: hitos pasados atenuados, el próximo destacado. */
+export function CalendarioElectoral({ c, hoy }: { c: Calendario; hoy: string }) {
+  const proximo = c.hitos.find((h) => h.fecha >= hoy);
   return (
-    <section aria-labelledby="calendario">
-      <h2 id="calendario" className="text-xl font-semibold">
-        Calendario electoral
-      </h2>
-      <ol className="mt-3 space-y-2">
+    <Tarjeta etiqueta="calendario">
+      <TituloSeccion id="calendario">Calendario electoral</TituloSeccion>
+      <ol className="relative ml-1.5 border-l border-stone-200 dark:border-stone-700">
         {c.hitos.map((h) => {
           const pasado = h.fecha < hoy;
+          const esProximo = h === proximo;
+          const votacion = h.fecha === c.fechaElecciones;
           return (
-            <li
-              key={`${h.fecha}-${h.titulo}`}
-              className={`flex gap-3 ${pasado ? "text-slate-500 dark:text-slate-500" : ""}`}
-            >
-              <time dateTime={h.fecha} className="w-36 shrink-0 font-medium capitalize">
-                {fmt.format(dia(h.fecha))}
-              </time>
-              <span>
-                {h.titulo}
-                <span className="block text-xs text-slate-500">{h.fuente}</span>
-              </span>
+            <li key={`${h.fecha}-${h.titulo}`} className="relative pb-5 pl-5 last:pb-0">
+              <span
+                aria-hidden
+                className={`absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-white dark:ring-stone-900 ${
+                  esProximo ? "bg-amber-500" : votacion ? "bg-stone-900 dark:bg-stone-100" : pasado ? "bg-stone-300 dark:bg-stone-600" : "border-2 border-stone-300 bg-white dark:border-stone-500 dark:bg-stone-900"
+                }`}
+              />
+              <div className={pasado ? "text-stone-400 dark:text-stone-500" : ""}>
+                <p className="flex flex-wrap items-center gap-2 text-sm">
+                  <time dateTime={h.fecha} className="font-semibold tabular-nums">
+                    {fmtDia.format(dia(h.fecha))}
+                  </time>
+                  <span className="text-xs uppercase tracking-wide text-stone-400">{fmtSemana.format(dia(h.fecha))}</span>
+                  {esProximo && <Pastilla tono="acento">Próximo</Pastilla>}
+                </p>
+                <p className={`mt-0.5 text-sm ${votacion ? "font-semibold" : ""}`}>{h.titulo}</p>
+                <p className="mt-0.5 text-xs text-stone-400">{h.fuente}</p>
+              </div>
             </li>
           );
         })}
       </ol>
       {!c.encuestasPublicables && (
-        <p className="mt-4 rounded bg-slate-100 p-3 text-sm dark:bg-slate-800">
-          Desde el {fmt.format(dia(c.vedaEncuestasDesde))} no se pueden publicar encuestas electorales,
-          por lo que esta web no las muestra.
+        <p className="mt-5 rounded-lg bg-stone-100 p-3 text-sm dark:bg-stone-800">
+          Desde el {fmtLargo.format(dia(c.vedaEncuestasDesde))} no se pueden publicar encuestas electorales, por lo
+          que esta web no las muestra.
         </p>
       )}
-    </section>
+    </Tarjeta>
   );
 }
